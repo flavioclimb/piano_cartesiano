@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Piano Cartesiano — Avventura Matematica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{
+  --paper:#FFF6E8;
+  --paper-dark:#F4E8D0;
+  --ink:#1A2B4C;
+  --ink-soft:#3D4F72;
+  --ocean:#1E5B94;
+  --ocean-dark:#0E3A66;
+  --sun:#FFC93C;
+  --sun-dark:#E6A92B;
+  --coral:#FF6B5B;
+  --coral-dark:#D94F3F;
+  --grass:#5CB85C;
+  --grass-dark:#3E8E3E;
+  --lavender:#A07BBF;
+  --shadow: 0 4px 0 rgba(26,43,76,0.15);
+  --shadow-hover: 0 6px 0 rgba(26,43,76,0.2);
+  --shadow-pressed: 0 2px 0 rgba(26,43,76,0.2);
+  --radius: 18px;
+  --grid-line:#C9D7E8;
+  --grid-line-strong:#7FA3CC;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  font-family:'Nunito', system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 10% 5%, #FFE9A8 0%, transparent 40%),
+    radial-gradient(circle at 90% 10%, #FFD4CB 0%, transparent 35%),
+    radial-gradient(circle at 50% 100%, #C9E4CA 0%, transparent 45%),
+    var(--paper);
+  background-attachment: fixed;
+  color:var(--ink);
+  line-height:1.5;
+  min-height:100vh;
+  padding:20px 10px 60px;
+}
+
+/* PAPER NOISE TEXTURE */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:0.35;
+  z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0 0.25 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wrap{
+  max-width:1100px;
+  margin:0 auto;
+  position:relative;
+  z-index:1;
+}
+
+/* ============ HEADER ============ */
+.header{
+  background: linear-gradient(135deg, var(--ocean) 0%, var(--ocean-dark) 100%);
+  color:white;
+  border-radius: 28px;
+  padding: 32px 40px;
+  position:relative;
+  overflow:hidden;
+  box-shadow: 0 8px 0 rgba(14,58,102,0.35);
+  margin-bottom:28px;
+}
+
+.header::before{
+  content:"";
+  position:absolute;
+  top:-30px; right:-30px;
+  width:180px; height:180px;
+  background:var(--sun);
+  border-radius:50%;
+  opacity:0.9;
+  box-shadow: 0 0 0 12px rgba(255,201,60,0.3);
+}
+
+.header::after{
+  content:"";
+  position:absolute;
+  bottom:-40px; left:60%;
+  width:120px; height:120px;
+  background:var(--coral);
+  border-radius:50%;
+  opacity:0.85;
+}
+
+.header h1{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height:1;
+  letter-spacing:-0.02em;
+  margin-bottom:8px;
+  position:relative;
+  z-index:1;
+}
+
+.header h1 em{
+  font-style:italic;
+  color:var(--sun);
+  display:inline-block;
+  transform:rotate(-2deg);
+}
+
+.header .subtitle{
+  font-size:1.05rem;
+  font-weight:600;
+  opacity:0.95;
+  position:relative;
+  z-index:1;
+  max-width:600px;
+}
+
+.student-bar{
+  margin-top:22px;
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  position:relative;
+  z-index:2;
+}
+
+.field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter: blur(6px);
+  border:2px solid rgba(255,255,255,0.25);
+  border-radius: 14px;
+  padding: 6px 14px;
+}
+
+.field label{
+  font-weight:700;
+  font-size:0.95rem;
+  white-space:nowrap;
+}
+
+.field input{
+  background:transparent;
+  border:none;
+  color:white;
+  font-family:inherit;
+  font-size:1rem;
+  font-weight:600;
+  outline:none;
+  min-width:160px;
+  padding: 6px 0;
+}
+
+.field input::placeholder{color:rgba(255,255,255,0.6);}
+
+/* ============ PROGRESS ============ */
+.progress-card{
+  background:white;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+  border: 3px solid var(--ink);
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.progress-card .label{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.3rem;
+  color:var(--ink);
+}
+
+.progress-track{
+  flex:1;
+  height: 22px;
+  background: var(--paper-dark);
+  border-radius: 100px;
+  overflow:hidden;
+  position:relative;
+  border: 2px solid var(--ink);
+}
+
+.progress-bar{
+  height:100%;
+  background: linear-gradient(90deg, var(--grass) 0%, var(--sun) 60%, var(--coral) 100%);
+  width:0%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 100px;
+}
+
+.progress-count{
+  font-weight:800;
+  font-size:1.1rem;
+  color:var(--ocean);
+  background:var(--sun);
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 2px solid var(--ink);
+  white-space:nowrap;
+}
+
+/* ============ EXERCISE CARDS ============ */
+.exercise{
+  background:white;
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border: 3px solid var(--ink);
+  position:relative;
+  transition: transform 0.2s;
+}
+
+.exercise.done{
+  background: linear-gradient(to bottom right, #F0FFF0 0%, #E8F9E8 100%);
+}
+
+.exercise-head{
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:18px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed var(--grid-line);
+}
+
+.ex-number{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size: 1.15rem;
+  background: var(--sun);
+  color: var(--ink);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+.ex-number.done{
+  background: var(--grass);
+  color: white;
+}
+
+.ex-title-block{flex:1; min-width:0;}
+
+.ex-title{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.5rem;
+  color:var(--ink);
+  line-height:1.15;
+  margin-bottom:4px;
+}
+
+.ex-hint{
+  font-size:0.98rem;
+  color: var(--ink-soft);
+  font-weight:600;
+}
+
+.ex-reset{
+  background: white;
+  border: 2px solid var(--coral);
+  color: var(--coral-dark);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family:inherit;
+  font-weight:700;
+  font-size:0.88rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition: all 0.15s;
+  white-space:nowrap;
+}
+
+.ex-reset:hover{
+  background: var(--coral);
+  color:white;
+  transform: translateY(-2px);
+}
+
+.ex-reset:active{transform: translateY(0);}
+
+/* ============ BUTTONS ============ */
+.btn{
+  font-family:inherit;
+  font-weight:800;
+  font-size:1rem;
+  padding: 12px 22px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  cursor:pointer;
+  transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow);
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  text-decoration:none;
+}
+
+.btn:hover{transform: translateY(-2px); box-shadow: var(--shadow-hover);}
+.btn:active{transform: translateY(2px); box-shadow: var(--shadow-pressed);}
+
+.btn-check{
+  background: var(--grass);
+  color:white;
+}
+
+.btn-primary{
+  background: var(--ocean);
+  color:white;
+}
+
+.btn-sun{
+  background: var(--sun);
+  color: var(--ink);
+}
+
+.btn-coral{
+  background: var(--coral);
+  color: white;
+}
+
+.btn-ghost{
+  background: white;
+  color: var(--ink);
+}
+
+.btn-small{
+  padding: 8px 14px;
+  font-size:0.9rem;
+  border-width:2px;
+  border-radius: 10px;
+}
+
+/* ============ FEEDBACK ============ */
+.feedback{
+  margin-top:16px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight:700;
+  font-size:1.05rem;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  animation: popin 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popin {
+  0% {transform: scale(0.7); opacity:0;}
+  100% {transform: scale(1); opacity:1;}
+}
+
+.feedback.ok{
+  background: #E8F9E8;
+  color: var(--grass-dark);
+  border: 2px solid var(--grass);
+}
+
+.feedback.partial{
+  background: #FFF4D6;
+  color: #9C7500;
+  border: 2px solid var(--sun-dark);
+}
+
+.feedback.no{
+  background: #FFE5E0;
+  color: var(--coral-dark);
+  border: 2px solid var(--coral);
+}
+
+.feedback .big{font-size:1.6rem;}
+
+/* ============ GRID / PIANO CARTESIANO ============ */
+.grid-wrap{
+  display:flex;
+  justify-content:center;
+  padding: 12px 0;
+  overflow-x:auto;
+}
+
+.cart-grid{
+  display:block;
+  max-width:100%;
+  height:auto;
+}
+
+.cart-grid .gline{
+  stroke: var(--grid-line);
+  stroke-width:1;
+}
+
+.cart-grid .gline-strong{
+  stroke: var(--grid-line-strong);
+  stroke-width:1.5;
+}
+
+.cart-grid .axis{
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap:round;
+}
+
+.cart-grid .arrowhead{fill: var(--ink);}
+
+.cart-grid .axis-label{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:20px;
+  fill: var(--ink);
+}
+
+.cart-grid .tick-label{
+  font-family:'Nunito', sans-serif;
+  font-weight:700;
+  font-size:14px;
+  fill: var(--ink-soft);
+}
+
+.cart-grid .clickzone{
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.cart-grid .clickzone:hover{fill: rgba(255,201,60,0.15);}
+
+.cart-grid .point{
+  transition: transform 0.2s;
+}
+
+.cart-grid .point circle.main{
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.cart-grid .point text{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:17px;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linejoin:round;
+}
+
+.cart-grid .preset-point circle{
+  fill: var(--coral);
+  stroke: var(--ink);
+  stroke-width:2.5;
+}
+
+.cart-grid .guide-h,
+.cart-grid .guide-v{
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  opacity: 0.7;
+}
+
+.cart-grid .guide-h{stroke: var(--coral);}
+.cart-grid .guide-v{stroke: var(--ocean);}
+
+.cart-grid .user-line{
+  stroke: var(--lavender);
+  stroke-width: 3;
+  stroke-linecap:round;
+  fill:none;
+}
+
+/* ============ POINT LETTERS LEGEND ============ */
+.letter-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin: 14px 0;
+  justify-content:center;
+  align-items:center;
+}
+
+.letter-chip{
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size: 1.1rem;
+  cursor:pointer;
+  transition: all 0.15s;
+  box-shadow: 2px 2px 0 var(--ink);
+  user-select:none;
+}
+
+.letter-chip:hover{transform: translateY(-2px); box-shadow: 2px 4px 0 var(--ink);}
+
+.letter-chip.active{
+  background: var(--sun);
+  transform: translateY(-2px);
+  box-shadow: 2px 4px 0 var(--ink);
+}
+
+.letter-chip.placed{
+  background: var(--grass);
+  color:white;
+  border-color: var(--grass-dark);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.letter-chip.placed:hover{transform:none;}
+
+/* ============ INPUTS ============ */
+.coord-input{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--paper);
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--ocean);
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.05rem;
+  margin: 4px;
+}
+
+.coord-input input, .mini-input{
+  width: 42px;
+  padding: 4px;
+  text-align:center;
+  border: 2px solid var(--grid-line-strong);
+  border-radius: 6px;
+  font-family:inherit;
+  font-weight:800;
+  font-size:1.05rem;
+  background:white;
+  outline:none;
+}
+
+.mini-input{width:70px;}
+
+.coord-input input:focus, .mini-input:focus{
+  border-color: var(--coral);
+  background: #FFFBEE;
+}
+
+.coord-input .letter{
+  color:var(--ocean-dark);
+  margin-right:2px;
+}
+
+/* TRUE/FALSE */
+.tf-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+  background: var(--paper);
+  padding: 12px 18px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 2px solid transparent;
+  flex-wrap:wrap;
+}
+
+.tf-row .q{flex:1; font-weight:700; min-width:200px;}
+
+.tf-btns{display:flex; gap:8px;}
+
+.tf-btn{
+  background:white;
+  border: 2.5px solid var(--ink);
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.05rem;
+  cursor:pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: all 0.12s;
+  min-width:56px;
+}
+.tf-btn:hover{transform: translateY(-2px); box-shadow: 2px 4px 0 var(--ink);}
+.tf-btn.sel-v{background: var(--grass); color:white; border-color: var(--grass-dark);}
+.tf-btn.sel-f{background: var(--coral); color:white; border-color: var(--coral-dark);}
+
+/* TABLE */
+.data-table{
+  width:100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 10px 0;
+  background:white;
+  border-radius: 12px;
+  overflow:hidden;
+  border: 2px solid var(--ink);
+}
+
+.data-table th, .data-table td{
+  padding: 10px 14px;
+  text-align:center;
+  border-bottom: 2px solid var(--paper-dark);
+}
+
+.data-table th{
+  background: var(--ocean);
+  color:white;
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.05rem;
+}
+
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:nth-child(even) td{background:var(--paper);}
+
+.data-table .cell-point{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  color:var(--ocean-dark);
+  font-size:1.05rem;
+}
+
+/* CHOICE BUTTONS */
+.choice-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 8px;
+  margin-top:8px;
+}
+
+.choice-btn{
+  background:white;
+  border: 2px solid var(--ink);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family:inherit;
+  font-weight:700;
+  font-size:0.95rem;
+  cursor:pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: all 0.12s;
+}
+.choice-btn:hover{transform: translateY(-2px); box-shadow: 2px 4px 0 var(--ink);}
+.choice-btn.selected{background: var(--sun); box-shadow: 2px 4px 0 var(--ink);}
+
+.choice-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding: 10px;
+  background: var(--paper);
+  border-radius: 10px;
+  margin-bottom:8px;
+  flex-wrap:wrap;
+}
+
+.choice-row .prompt{font-weight:700; min-width:180px; flex:1;}
+
+/* MATCHING EXERCISE */
+.match-grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top:12px;
+}
+
+.match-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--paper);
+  padding:10px 14px;
+  border-radius: 10px;
+  flex-wrap:wrap;
+}
+
+.match-row .pt-label{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size:1.15rem;
+  color:var(--coral-dark);
+  min-width:40px;
+}
+
+.match-row select{
+  flex:1;
+  padding:8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-family:inherit;
+  font-weight:700;
+  background:white;
+  cursor:pointer;
+  min-width:150px;
+}
+
+/* ACTION BAR per exercise */
+.action-bar{
+  display:flex;
+  gap: 10px;
+  margin-top:18px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+/* ============ FLOATING TOOLBAR ============ */
+.toolbar{
+  position:fixed;
+  bottom: 18px;
+  left:50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 100px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  display:flex;
+  gap: 8px;
+  z-index: 100;
+  flex-wrap:wrap;
+  justify-content:center;
+  max-width: calc(100% - 20px);
+}
+
+.toolbar .btn{
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  border-radius: 100px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.toolbar .btn:hover{box-shadow: 2px 4px 0 var(--ink);}
+
+/* ============ MODAL ============ */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background: rgba(14,58,102,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:20px;
+  animation: fadein 0.2s;
+}
+
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+.modal{
+  background: white;
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 480px;
+  border: 4px solid var(--ink);
+  box-shadow: 0 12px 0 rgba(26,43,76,0.3);
+  text-align:center;
+}
+
+.modal h2{
+  font-family:'Fraunces', serif;
+  font-size: 1.8rem;
+  margin-bottom:10px;
+  color:var(--ocean-dark);
+}
+
+.modal p{margin-bottom:20px; font-weight:600;}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* ============ CELEBRATION ============ */
+.celebration{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index: 300;
+}
+
+.confetti{
+  position:absolute;
+  width:10px; height:14px;
+  top:-20px;
+  animation: fall 3s linear forwards;
+}
+
+@keyframes fall{
+  to{transform: translateY(110vh) rotate(720deg); opacity:0;}
+}
+
+/* ============ INSTRUCTIONS BANNER ============ */
+.rule-box{
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFEBB5 100%);
+  border: 3px dashed var(--sun-dark);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom:24px;
+  font-weight:600;
+}
+
+.rule-box strong{color:var(--ocean-dark);}
+
+.rule-box h3{
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  font-size: 1.25rem;
+  color: var(--ink);
+  margin-bottom:8px;
+  display:flex; align-items:center; gap:10px;
+}
+
+.rule-box .coord-example{
+  display:inline-block;
+  background:white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 2px solid var(--ink);
+  font-family:'Fraunces', serif;
+  font-weight:800;
+  margin: 0 4px;
+}
+
+/* UTILITIES */
+.hint-line{
+  font-size:0.92rem;
+  color:var(--ink-soft);
+  font-style:italic;
+  margin-top:8px;
+}
+
+.mini-chip{
+  display:inline-block;
+  background:var(--paper);
+  padding:3px 10px;
+  border-radius:6px;
+  font-family:'Fraunces',serif;
+  font-weight:800;
+  margin: 0 2px;
+  border:2px solid var(--ink);
+  font-size: 0.98rem;
+}
+
+/* Responsive */
+@media (max-width: 700px){
+  body{padding: 10px 6px 100px;}
+  .header{padding: 22px 22px;}
+  .exercise{padding: 20px 18px;}
+  .progress-card{padding: 14px 16px; flex-wrap:wrap;}
+  .ex-title{font-size: 1.25rem;}
+  .ex-head{flex-wrap:wrap;}
+  .toolbar{padding: 6px 8px; gap:5px;}
+  .toolbar .btn{padding: 8px 12px; font-size:0.85rem;}
+}
+
+/* PRINT / PDF STYLES */
+@media print{
+  body{background: white; padding: 0;}
+  body::before{display:none;}
+  .toolbar, .ex-reset, .btn-check, .action-bar{display:none !important;}
+  .exercise{
+    box-shadow:none;
+    border:2px solid var(--ink);
+    page-break-inside: avoid;
+  }
+  .header{background: white; color: var(--ink); box-shadow:none; border: 3px solid var(--ink);}
+  .header h1 em{color: var(--coral);}
+  .header::before, .header::after{display:none;}
+}
+
+.pdf-mode .toolbar{display:none;}
+.pdf-mode .ex-reset{display:none;}
+.pdf-mode .btn-check{display:none;}
+
+</style>
+</head>
+<body>
+
+<div class="celebration" id="celebration"></div>
+
+<div class="wrap" id="pdf-root">
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <h1>Il Piano Cartesiano <em>— un'avventura!</em></h1>
+    <p class="subtitle">Impara a trovare i punti, disegnare rette e figure geometriche nel primo quadrante del piano cartesiano. Usa solo numeri positivi!</p>
+    <div class="student-bar">
+      <div class="field">
+        <label>👤 Nome:</label>
+        <input type="text" id="stu-name" placeholder="scrivi il tuo nome">
+      </div>
+      <div class="field">
+        <label>🎒 Classe:</label>
+        <input type="text" id="stu-class" placeholder="es. 1ª B" style="min-width:100px">
+      </div>
+      <div class="field">
+        <label>📅 Data:</label>
+        <input type="text" id="stu-date" placeholder="gg/mm/aaaa" style="min-width:130px">
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ PROGRESS ============ -->
+  <div class="progress-card">
+    <div class="label">🏆 Progressi</div>
+    <div class="progress-track"><div class="progress-bar" id="pbar"></div></div>
+    <div class="progress-count" id="pcount">0 / 16</div>
+  </div>
+
+  <!-- ============ RULE REMINDER ============ -->
+  <div class="rule-box">
+    <h3>🗺️ Come si trova un punto?</h3>
+    <p>Un punto si scrive così: <span class="coord-example">P(x ; y)</span></p>
+    <p style="margin-top:8px;">
+      <strong>1.</strong> Il primo numero (<strong>x</strong>) è sull'asse orizzontale → cammina di lato 🚶<br>
+      <strong>2.</strong> Il secondo numero (<strong>y</strong>) è sull'asse verticale → sali in su 🧗<br>
+      <strong>3.</strong> Dove le due strade si incontrano c'è il tuo punto! ⭐
+    </p>
+  </div>
+
+  <!-- ============ EXERCISES ============ -->
+  <div id="exercises"></div>
+
+</div>
+
+<!-- ============ FLOATING TOOLBAR ============ -->
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="scrollTop()">⬆️ Inizio</button>
+  <button class="btn btn-sun" onclick="exportPDF()">📄 Scarica PDF</button>
+  <button class="btn btn-coral" onclick="confirmResetAll()">🔄 Ricomincia tutto</button>
+</div>
+
+<script>
+/* =====================================================
+   STATE & AUTOSAVE
+   ===================================================== */
+const STORAGE_KEY = 'piano_cartesiano_v1';
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {student:{name:'',class:'',date:''}, exercises:{}};
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function exState(id){
+  if(!state.exercises[id]) state.exercises[id] = {};
+  return state.exercises[id];
+}
+
+/* =====================================================
+   GRID BUILDER
+   ===================================================== */
+function buildGrid({id, size=8, clickable=false, onClick=null, presetPoints=[], showGuides=null, showLines=[], width=500}){
+  const max = size;
+  const padL = 48, padR = 30, padT = 24, padB = 48;
+  const plotW = width - padL - padR;
+  const plotH = plotW;
+  const totalH = plotH + padT + padB;
+  const cell = plotW / max;
+
+  const x2px = x => padL + x * cell;
+  const y2px = y => padT + plotH - y * cell;
+
+  let svg = `<svg class="cart-grid" id="${id}" viewBox="0 0 ${width} ${totalH}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Background
+  svg += `<rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="#FBFCFE" stroke="none"/>`;
+
+  // Grid lines
+  for(let i=0; i<=max; i++){
+    svg += `<line class="gline" x1="${x2px(i)}" y1="${padT}" x2="${x2px(i)}" y2="${padT+plotH}"/>`;
+    svg += `<line class="gline" x1="${padL}" y1="${y2px(i)}" x2="${padL+plotW}" y2="${y2px(i)}"/>`;
+  }
+
+  // Axes
+  svg += `<line class="axis" x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW+10}" y2="${padT+plotH}"/>`;
+  svg += `<line class="axis" x1="${padL}" y1="${padT-10}" x2="${padL}" y2="${padT+plotH}"/>`;
+  // Arrowheads
+  svg += `<polygon class="arrowhead" points="${padL+plotW+10},${padT+plotH-6} ${padL+plotW+20},${padT+plotH} ${padL+plotW+10},${padT+plotH+6}"/>`;
+  svg += `<polygon class="arrowhead" points="${padL-6},${padT-10} ${padL},${padT-20} ${padL+6},${padT-10}"/>`;
+  // Axis labels
+  svg += `<text class="axis-label" x="${padL+plotW+14}" y="${padT+plotH+22}">x</text>`;
+  svg += `<text class="axis-label" x="${padL-18}" y="${padT-14}">y</text>`;
+  svg += `<text class="axis-label" x="${padL-12}" y="${padT+plotH+20}" fill="#3D4F72">O</text>`;
+
+  // Ticks & tick labels
+  for(let i=0; i<=max; i++){
+    if(i>0){
+      svg += `<text class="tick-label" x="${x2px(i)}" y="${padT+plotH+20}" text-anchor="middle">${i}</text>`;
+      svg += `<text class="tick-label" x="${padL-10}" y="${y2px(i)+5}" text-anchor="end">${i}</text>`;
+    }
+  }
+
+  // Guide lines
+  if(showGuides){
+    const gx = x2px(showGuides.x), gy = y2px(showGuides.y);
+    svg += `<line class="guide-v" x1="${gx}" y1="${padT+plotH}" x2="${gx}" y2="${gy}"/>`;
+    svg += `<line class="guide-h" x1="${padL}" y1="${gy}" x2="${gx}" y2="${gy}"/>`;
+  }
+
+  // User lines
+  showLines.forEach(ln => {
+    svg += `<line class="user-line" x1="${x2px(ln.x1)}" y1="${y2px(ln.y1)}" x2="${x2px(ln.x2)}" y2="${y2px(ln.y2)}"/>`;
+  });
+
+  // Preset points (given by exercise)
+  presetPoints.forEach(p => {
+    const labelOffset = p.labelPos || {dx:10, dy:-10};
+    svg += `<g class="preset-point">`;
+    svg += `<circle cx="${x2px(p.x)}" cy="${y2px(p.y)}" r="7"/>`;
+    if(p.label){
+      svg += `<text x="${x2px(p.x)+labelOffset.dx}" y="${y2px(p.y)+labelOffset.dy}"
+               style="font-family:Fraunces,serif;font-weight:800;font-size:18px;fill:#1A2B4C;
+                      paint-order:stroke;stroke:white;stroke-width:3;stroke-linejoin:round;">${p.label}</text>`;
+    }
+    svg += `</g>`;
+  });
+
+  // Clickable lattice points (only at integer coords)
+  if(clickable){
+    for(let x=0; x<=max; x++){
+      for(let y=0; y<=max; y++){
+        svg += `<circle class="clickzone" cx="${x2px(x)}" cy="${y2px(y)}" r="14" data-x="${x}" data-y="${y}"/>`;
+      }
+    }
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function attachGridClicks(svgId, handler){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  svg.querySelectorAll('.clickzone').forEach(cz => {
+    cz.addEventListener('click', () => {
+      const x = parseInt(cz.dataset.x);
+      const y = parseInt(cz.dataset.y);
+      handler(x, y);
+    });
+  });
+}
+
+function drawUserPoint(svgId, x, y, label, color='#FFC93C'){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const padL=48, padT=24, plotW = svg.viewBox.baseVal.width - padL - 30;
+  const cell = plotW / 8;
+  const cx = padL + x*cell, cy = padT + plotW - y*cell;
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','point user-added');
+  g.innerHTML = `<circle class="main" cx="${cx}" cy="${cy}" r="8" fill="${color}"/>
+                 <text x="${cx+12}" y="${cy-10}">${label}</text>`;
+  svg.appendChild(g);
+}
+
+/* =====================================================
+   EXERCISE DEFINITIONS
+   ===================================================== */
+const EXERCISES = [];
+
+/* ========== ES 1: Plot points ========== */
+EXERCISES.push({
+  id:'ex1',
+  number:'1',
+  title:'Segna i punti sul piano',
+  hint:'Clicca prima una lettera, poi il punto giusto sulla griglia.',
+  targets:[
+    {l:'A', x:2, y:3},
+    {l:'B', x:5, y:1},
+    {l:'C', x:4, y:5},
+    {l:'D', x:1, y:4},
+    {l:'E', x:6, y:6},
+    {l:'F', x:3, y:2}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.placed) s.placed = {};
+    const list = this.targets.map(t=>`<span class="mini-chip">${t.l}(${t.x} ; ${t.y})</span>`).join(' ');
+    container.innerHTML = `
+      <p><strong>Segna sul piano cartesiano questi punti:</strong></p>
+      <p style="margin:10px 0;">${list}</p>
+      <div class="letter-legend" id="${this.id}-letters"></div>
+      ${buildGrid({id:this.id+'-grid', size:8, clickable:true})}
+      <div class="hint-line">💡 Suggerimento: seleziona una lettera gialla, poi clicca sulla griglia dove deve andare.</div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx1()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.refresh();
+  },
+  refresh(){
+    const s = exState(this.id);
+    const letters = document.getElementById(this.id+'-letters');
+    letters.innerHTML = this.targets.map(t=>{
+      const placed = s.placed[t.l];
+      return `<span class="letter-chip ${placed?'placed':''}" data-letter="${t.l}">${t.l}</span>`;
+    }).join('');
+    // Redraw points
+    const svg = document.getElementById(this.id+'-grid');
+    svg.querySelectorAll('.user-added').forEach(n=>n.remove());
+    Object.entries(s.placed).forEach(([l, pt])=>{
+      drawUserPoint(this.id+'-grid', pt.x, pt.y, l, '#FFC93C');
+    });
+    // Attach letter click
+    letters.querySelectorAll('.letter-chip').forEach(ch => {
+      ch.addEventListener('click', () => {
+        if(ch.classList.contains('placed')) return;
+        letters.querySelectorAll('.letter-chip').forEach(c=>c.classList.remove('active'));
+        ch.classList.add('active');
+      });
+    });
+    // Attach grid click
+    attachGridClicks(this.id+'-grid', (x,y) => {
+      const active = letters.querySelector('.letter-chip.active');
+      if(!active){
+        showFeedback(this.id, 'partial', '👆 Prima scegli una lettera gialla!');
+        return;
+      }
+      const l = active.dataset.letter;
+      s.placed[l] = {x,y};
+      saveState();
+      this.refresh();
+      document.getElementById(this.id+'-fb').innerHTML='';
+    });
+  }
+});
+
+function checkEx1(){
+  const ex = EXERCISES.find(e=>e.id==='ex1');
+  const s = exState('ex1');
+  let correct = 0, wrong = [];
+  ex.targets.forEach(t=>{
+    const p = s.placed[t.l];
+    if(p && p.x===t.x && p.y===t.y) correct++;
+    else wrong.push(t.l);
+  });
+  if(correct===ex.targets.length){
+    showFeedback('ex1','ok',`🎉 Perfetto! Tutti i ${correct} punti sono al posto giusto!`);
+    markDone('ex1');
+  } else {
+    showFeedback('ex1','partial',`Hai messo ${correct} punti su ${ex.targets.length}. Controlla: ${wrong.join(', ')} ✏️`);
+  }
+}
+
+/* ========== ES 2: Plot points ========== */
+EXERCISES.push({
+  id:'ex2',
+  number:'2',
+  title:'Segna altri punti',
+  hint:'Un altro gruppo di punti da posizionare — ormai sei un campione!',
+  targets:[
+    {l:'G', x:1, y:1},
+    {l:'H', x:3, y:5},
+    {l:'I', x:7, y:2},
+    {l:'L', x:5, y:7},
+    {l:'M', x:2, y:6},
+    {l:'N', x:6, y:4}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.placed) s.placed = {};
+    const list = this.targets.map(t=>`<span class="mini-chip">${t.l}(${t.x} ; ${t.y})</span>`).join(' ');
+    container.innerHTML = `
+      <p><strong>Segna sul piano cartesiano questi punti:</strong></p>
+      <p style="margin:10px 0;">${list}</p>
+      <div class="letter-legend" id="${this.id}-letters"></div>
+      ${buildGrid({id:this.id+'-grid', size:8, clickable:true})}
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx2()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.refresh();
+  },
+  refresh: EXERCISES[0].refresh
+});
+EXERCISES[1].refresh = EXERCISES[0].refresh;
+
+function checkEx2(){
+  const ex = EXERCISES.find(e=>e.id==='ex2');
+  const s = exState('ex2');
+  let correct = 0, wrong = [];
+  ex.targets.forEach(t=>{
+    const p = s.placed[t.l];
+    if(p && p.x===t.x && p.y===t.y) correct++;
+    else wrong.push(t.l);
+  });
+  if(correct===ex.targets.length){
+    showFeedback('ex2','ok',`🌟 Bravissimo! Punti tutti al posto giusto!`);
+    markDone('ex2');
+  } else {
+    showFeedback('ex2','partial',`${correct}/${ex.targets.length} corretti. Ricontrolla: ${wrong.join(', ')}`);
+  }
+}
+
+/* ========== ES 3: Read coordinates ========== */
+EXERCISES.push({
+  id:'ex3',
+  number:'3',
+  title:'Leggi le coordinate',
+  hint:'Guarda i punti segnati e scrivi le loro coordinate (prima la x, poi la y).',
+  presets:[
+    {l:'A', x:2, y:4},
+    {l:'B', x:5, y:2},
+    {l:'C', x:1, y:1},
+    {l:'D', x:6, y:5},
+    {l:'E', x:4, y:6},
+    {l:'F', x:7, y:3}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Osserva il piano e scrivi le coordinate di ciascun punto:</strong></p>
+      ${buildGrid({id:this.id+'-grid', size:8, presetPoints:this.presets.map(p=>({x:p.x,y:p.y,label:p.l,labelPos:{dx:10,dy:-8}}))})}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center;">
+        ${this.presets.map(p=>`
+          <div class="coord-input">
+            <span class="letter">${p.l} =</span> (
+            <input type="number" min="0" max="8" id="${this.id}-${p.l}-x" value="${s.ans[p.l+'x']||''}" placeholder="x">
+            ;
+            <input type="number" min="0" max="8" id="${this.id}-${p.l}-y" value="${s.ans[p.l+'y']||''}" placeholder="y">
+            )
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx3()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    // Attach auto-save
+    this.presets.forEach(p=>{
+      ['x','y'].forEach(ax=>{
+        const el = document.getElementById(`${this.id}-${p.l}-${ax}`);
+        el.addEventListener('input', ()=>{
+          s.ans[p.l+ax] = el.value;
+          saveState();
+        });
+      });
+    });
+  }
+});
+
+function checkEx3(){
+  const ex = EXERCISES.find(e=>e.id==='ex3');
+  const s = exState('ex3');
+  let correct=0, wrong=[];
+  ex.presets.forEach(p=>{
+    const x = parseInt(s.ans[p.l+'x']);
+    const y = parseInt(s.ans[p.l+'y']);
+    if(x===p.x && y===p.y) correct++;
+    else wrong.push(p.l);
+  });
+  if(correct===ex.presets.length){
+    showFeedback('ex3','ok',`✨ Fantastico! Hai letto tutte le coordinate!`);
+    markDone('ex3');
+  } else {
+    showFeedback('ex3','partial',`${correct}/${ex.presets.length} giusti. Ricontrolla: ${wrong.join(', ')}`);
+  }
+}
+
+/* ========== ES 4: True/False ========== */
+EXERCISES.push({
+  id:'ex4',
+  number:'4',
+  title:'Vero o Falso?',
+  hint:'Osserva il piano cartesiano e rispondi.',
+  presets:[
+    {l:'A', x:2, y:4},
+    {l:'B', x:5, y:2},
+    {l:'C', x:1, y:1},
+    {l:'D', x:6, y:5},
+    {l:'E', x:4, y:6},
+    {l:'F', x:7, y:3}
+  ],
+  questions:[
+    {q:'Il punto A si trova a x = 2', ans:true},
+    {q:'Il punto B ha le coordinate (3 ; 5)', ans:false},
+    {q:'Il punto C si trova in basso a sinistra', ans:true},
+    {q:'Il punto D è il punto più in alto', ans:false},
+    {q:'Il punto E ha la y = 6', ans:true},
+    {q:'Il punto F si trova a x = 6', ans:false},
+    {q:'Il punto E è più in alto del punto B', ans:true},
+    {q:'Il punto C ha le coordinate (1 ; 1)', ans:true}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Guarda il piano cartesiano e scegli Vero (V) o Falso (F):</strong></p>
+      ${buildGrid({id:this.id+'-grid', size:8, presetPoints:this.presets.map(p=>({x:p.x,y:p.y,label:p.l,labelPos:{dx:10,dy:-8}}))})}
+      <div style="margin-top:14px;">
+        ${this.questions.map((q,i)=>`
+          <div class="tf-row">
+            <span class="q">${i+1}. ${q.q}</span>
+            <div class="tf-btns">
+              <button class="tf-btn ${s.ans[i]==='V'?'sel-v':''}" onclick="setTF('${this.id}',${i},'V')">V</button>
+              <button class="tf-btn ${s.ans[i]==='F'?'sel-f':''}" onclick="setTF('${this.id}',${i},'F')">F</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx4()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+  }
+});
+
+function setTF(id, i, val){
+  const s = exState(id);
+  if(!s.ans) s.ans = {};
+  s.ans[i] = val;
+  saveState();
+  renderOne(id);
+}
+
+function checkEx4(){
+  const ex = EXERCISES.find(e=>e.id==='ex4');
+  const s = exState('ex4');
+  let correct=0;
+  ex.questions.forEach((q,i)=>{
+    const ans = s.ans[i];
+    if((ans==='V' && q.ans===true) || (ans==='F' && q.ans===false)) correct++;
+  });
+  if(correct===ex.questions.length){
+    showFeedback('ex4','ok',`🎯 Tutte giuste! Sei un osservatore eccellente!`);
+    markDone('ex4');
+  } else {
+    showFeedback('ex4','partial',`${correct}/${ex.questions.length} giuste. Riprova quelle sbagliate! 🔍`);
+  }
+}
+
+/* ========== ES 5: Draw segments ========== */
+EXERCISES.push({
+  id:'ex5',
+  number:'5',
+  title:'Unisci i punti con una retta',
+  hint:'Segna i due punti e poi immagina la retta che li unisce (verrà disegnata automaticamente).',
+  tasks:[
+    {label:'5a', a:{l:'A',x:1,y:1}, b:{l:'B',x:5,y:5}},
+    {label:'5b', a:{l:'C',x:2,y:6}, b:{l:'D',x:7,y:1}},
+    {label:'5c', a:{l:'E',x:1,y:3}, b:{l:'F',x:6,y:3}},
+    {label:'5d', a:{l:'G',x:4,y:1}, b:{l:'H',x:4,y:7}}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.placed) s.placed = {};
+    container.innerHTML = `
+      <p><strong>Per ogni coppia, clicca la lettera e poi il punto corretto. La retta apparirà quando entrambi sono al posto giusto!</strong></p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;">
+        ${this.tasks.map((t,i)=>`
+          <div style="background:var(--paper);padding:14px;border-radius:14px;border:2px solid var(--grid-line-strong);">
+            <div style="font-family:Fraunces,serif;font-weight:800;font-size:1.1rem;margin-bottom:8px;">
+              ${t.label}) <span style="color:var(--coral-dark)">${t.a.l}(${t.a.x} ; ${t.a.y})</span> e <span style="color:var(--coral-dark)">${t.b.l}(${t.b.x} ; ${t.b.y})</span>
+            </div>
+            <div class="letter-legend" id="${this.id}-letters-${i}"></div>
+            ${buildGrid({id:`${this.id}-grid-${i}`, size:8, clickable:true, width:360})}
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx5()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.refresh();
+  },
+  refresh(){
+    const s = exState(this.id);
+    this.tasks.forEach((t,i)=>{
+      if(!s.placed[i]) s.placed[i]={};
+      const letters = document.getElementById(`${this.id}-letters-${i}`);
+      letters.innerHTML = [t.a, t.b].map(p=>{
+        const placed = s.placed[i][p.l];
+        return `<span class="letter-chip ${placed?'placed':''}" data-letter="${p.l}" data-task="${i}">${p.l}</span>`;
+      }).join('');
+      // Redraw
+      const svg = document.getElementById(`${this.id}-grid-${i}`);
+      svg.querySelectorAll('.user-added, .user-segment').forEach(n=>n.remove());
+      const pa = s.placed[i][t.a.l];
+      const pb = s.placed[i][t.b.l];
+      if(pa) drawUserPointSized(`${this.id}-grid-${i}`, pa.x, pa.y, t.a.l, '#FFC93C', 360);
+      if(pb) drawUserPointSized(`${this.id}-grid-${i}`, pb.x, pb.y, t.b.l, '#FF6B5B', 360);
+      if(pa && pb){
+        drawUserSegment(`${this.id}-grid-${i}`, pa.x, pa.y, pb.x, pb.y, 360);
+      }
+      letters.querySelectorAll('.letter-chip').forEach(ch=>{
+        ch.addEventListener('click', ()=>{
+          if(ch.classList.contains('placed')) return;
+          letters.querySelectorAll('.letter-chip').forEach(c=>c.classList.remove('active'));
+          ch.classList.add('active');
+        });
+      });
+      attachGridClicks(`${this.id}-grid-${i}`, (x,y)=>{
+        const active = letters.querySelector('.letter-chip.active');
+        if(!active){ showFeedback(this.id,'partial','👆 Prima scegli una lettera!'); return; }
+        s.placed[i][active.dataset.letter]={x,y};
+        saveState();
+        this.refresh();
+        document.getElementById(this.id+'-fb').innerHTML='';
+      });
+    });
+  }
+});
+
+function drawUserPointSized(svgId, x, y, label, color, width=500){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const padL=48, padT=24;
+  const plotW = width - padL - 30;
+  const cell = plotW / 8;
+  const cx = padL + x*cell, cy = padT + plotW - y*cell;
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','point user-added');
+  g.innerHTML = `<circle class="main" cx="${cx}" cy="${cy}" r="7" fill="${color}"/>
+                 <text x="${cx+11}" y="${cy-9}" style="font-family:Fraunces,serif;font-weight:800;font-size:16px;fill:#1A2B4C;paint-order:stroke;stroke:white;stroke-width:3;stroke-linejoin:round;">${label}</text>`;
+  svg.appendChild(g);
+}
+
+function drawUserSegment(svgId, x1, y1, x2, y2, width=500){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const padL=48, padT=24;
+  const plotW = width - padL - 30;
+  const cell = plotW / 8;
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('class','user-segment');
+  line.setAttribute('x1', padL + x1*cell);
+  line.setAttribute('y1', padT + plotW - y1*cell);
+  line.setAttribute('x2', padL + x2*cell);
+  line.setAttribute('y2', padT + plotW - y2*cell);
+  line.setAttribute('stroke', '#A07BBF');
+  line.setAttribute('stroke-width', '3');
+  line.setAttribute('stroke-linecap', 'round');
+  svg.insertBefore(line, svg.querySelector('.user-added'));
+}
+
+function checkEx5(){
+  const ex = EXERCISES.find(e=>e.id==='ex5');
+  const s = exState('ex5');
+  let ok=0;
+  ex.tasks.forEach((t,i)=>{
+    const pa = s.placed[i]?.[t.a.l];
+    const pb = s.placed[i]?.[t.b.l];
+    if(pa && pb && pa.x===t.a.x && pa.y===t.a.y && pb.x===t.b.x && pb.y===t.b.y) ok++;
+  });
+  if(ok===ex.tasks.length){
+    showFeedback('ex5','ok',`📏 Rette perfette! Hai unito tutti i punti correttamente.`);
+    markDone('ex5');
+  } else {
+    showFeedback('ex5','partial',`${ok}/${ex.tasks.length} coppie corrette. Riprova! 💪`);
+  }
+}
+
+/* ========== ES 6: Horizontal or vertical? ========== */
+EXERCISES.push({
+  id:'ex6',
+  number:'6',
+  title:'Retta orizzontale o verticale?',
+  hint:'Guarda le coordinate: se la y è uguale → orizzontale, se la x è uguale → verticale.',
+  tasks:[
+    {a:{l:'A',x:2,y:3}, b:{l:'B',x:7,y:3}, ans:'orizzontale'},
+    {a:{l:'C',x:4,y:1}, b:{l:'D',x:4,y:6}, ans:'verticale'},
+    {a:{l:'E',x:1,y:5}, b:{l:'F',x:8,y:5}, ans:'orizzontale'},
+    {a:{l:'G',x:6,y:2}, b:{l:'H',x:6,y:8}, ans:'verticale'},
+    {a:{l:'I',x:3,y:4}, b:{l:'L',x:3,y:1}, ans:'verticale'},
+    {a:{l:'M',x:0,y:7}, b:{l:'N',x:5,y:7}, ans:'orizzontale'}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Guarda i due punti. La retta che li unisce è orizzontale o verticale?</strong></p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+        ${this.tasks.map((t,i)=>`
+          <div class="choice-row">
+            <span class="prompt">${i+1}) ${t.a.l}(${t.a.x} ; ${t.a.y}) e ${t.b.l}(${t.b.x} ; ${t.b.y})</span>
+            <div class="choice-group">
+              <button class="choice-btn ${s.ans[i]==='orizzontale'?'selected':''}" onclick="setChoice('ex6',${i},'orizzontale')">➡️ Orizzontale</button>
+              <button class="choice-btn ${s.ans[i]==='verticale'?'selected':''}" onclick="setChoice('ex6',${i},'verticale')">⬆️ Verticale</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx6()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+  }
+});
+
+function setChoice(id, i, val){
+  const s = exState(id);
+  if(!s.ans) s.ans = {};
+  s.ans[i] = val;
+  saveState();
+  renderOne(id);
+}
+
+function checkEx6(){
+  const ex = EXERCISES.find(e=>e.id==='ex6');
+  const s = exState('ex6');
+  let ok=0;
+  ex.tasks.forEach((t,i)=>{ if(s.ans[i]===t.ans) ok++; });
+  if(ok===ex.tasks.length){
+    showFeedback('ex6','ok',`🚂 Tutte giuste! Orizzontale = stessa y, verticale = stessa x.`);
+    markDone('ex6');
+  } else {
+    showFeedback('ex6','partial',`${ok}/${ex.tasks.length} corrette. Ricorda: y uguale = orizzontale!`);
+  }
+}
+
+/* ========== ES 7: Complete the table ========== */
+EXERCISES.push({
+  id:'ex7',
+  number:'7',
+  title:'Completa la tabella',
+  hint:'Scrivi la x e la y per ogni punto.',
+  rows:[
+    {l:'A', x:3, y:5, fixed:true},
+    {l:'B', x:7, y:2},
+    {l:'C', x:1, y:4},
+    {l:'D', x:5, y:8},
+    {l:'E', x:2, y:1},
+    {l:'F', x:6, y:3},
+    {l:'G', x:4, y:7},
+    {l:'H', x:8, y:6}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Guarda le coordinate e riempi la tabella:</strong></p>
+      <table class="data-table" style="max-width:480px;margin:14px auto;">
+        <thead><tr><th>Punto</th><th>x</th><th>y</th></tr></thead>
+        <tbody>
+        ${this.rows.map((r,i)=>`
+          <tr>
+            <td class="cell-point">${r.l}(${r.x} ; ${r.y})</td>
+            <td>${r.fixed ? r.x : `<input class="mini-input" type="number" id="${this.id}-${r.l}-x" min="0" max="8" value="${s.ans[r.l+'x']||''}">`}</td>
+            <td>${r.fixed ? r.y : `<input class="mini-input" type="number" id="${this.id}-${r.l}-y" min="0" max="8" value="${s.ans[r.l+'y']||''}">`}</td>
+          </tr>
+        `).join('')}
+        </tbody>
+      </table>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx7()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.rows.forEach(r=>{
+      if(r.fixed) return;
+      ['x','y'].forEach(ax=>{
+        const el = document.getElementById(`${this.id}-${r.l}-${ax}`);
+        el.addEventListener('input', ()=>{
+          s.ans[r.l+ax]=el.value;
+          saveState();
+        });
+      });
+    });
+  }
+});
+
+function checkEx7(){
+  const ex = EXERCISES.find(e=>e.id==='ex7');
+  const s = exState('ex7');
+  let ok=0, total=0;
+  ex.rows.forEach(r=>{
+    if(r.fixed) return;
+    total++;
+    if(parseInt(s.ans[r.l+'x'])===r.x && parseInt(s.ans[r.l+'y'])===r.y) ok++;
+  });
+  if(ok===total){
+    showFeedback('ex7','ok',`📋 Tabella completata perfettamente!`);
+    markDone('ex7');
+  } else {
+    showFeedback('ex7','partial',`${ok}/${total} righe giuste. Controlla bene le coordinate!`);
+  }
+}
+
+/* ========== ES 8: Draw figure - triangle ========== */
+EXERCISES.push({
+  id:'ex8',
+  number:'8',
+  title:'Disegna il triangolo!',
+  hint:'Segna i tre vertici in ordine: appena posizionati, i lati si disegnano da soli.',
+  vertices:[
+    {l:'A', x:1, y:1},
+    {l:'B', x:5, y:1},
+    {l:'C', x:3, y:5}
+  ],
+  figureName:'triangolo',
+  render(container){ renderFigureEx(this, container); }
+});
+
+function renderFigureEx(ex, container){
+  const s = exState(ex.id);
+  if(!s.placed) s.placed = {};
+  if(s.name===undefined) s.name = '';
+  const list = ex.vertices.map(v=>`<span class="mini-chip">${v.l}(${v.x} ; ${v.y})</span>`).join(' ');
+  container.innerHTML = `
+    <p><strong>Segna i vertici, uniscili in ordine e scopri che figura viene fuori:</strong></p>
+    <p style="margin:10px 0;">${list}</p>
+    <div class="letter-legend" id="${ex.id}-letters"></div>
+    ${buildGrid({id:ex.id+'-grid', size:8, clickable:true})}
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <label style="font-weight:700;">🔷 Che figura è?</label>
+      <input class="mini-input" style="width:160px;" id="${ex.id}-name" placeholder="es. triangolo" value="${s.name}">
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-check" onclick="checkFigureEx('${ex.id}')">✓ Controlla</button>
+      <div id="${ex.id}-fb"></div>
+    </div>
+  `;
+  refreshFigureEx(ex);
+  document.getElementById(ex.id+'-name').addEventListener('input',e=>{
+    s.name = e.target.value;
+    saveState();
+  });
+}
+
+function refreshFigureEx(ex){
+  const s = exState(ex.id);
+  const letters = document.getElementById(ex.id+'-letters');
+  letters.innerHTML = ex.vertices.map(v=>{
+    const placed = s.placed[v.l];
+    return `<span class="letter-chip ${placed?'placed':''}" data-letter="${v.l}">${v.l}</span>`;
+  }).join('');
+  const svg = document.getElementById(ex.id+'-grid');
+  svg.querySelectorAll('.user-added, .user-segment').forEach(n=>n.remove());
+  // Points
+  ex.vertices.forEach(v=>{
+    const p = s.placed[v.l];
+    if(p) drawUserPoint(ex.id+'-grid', p.x, p.y, v.l, '#FFC93C');
+  });
+  // Segments (closed polygon)
+  for(let i=0; i<ex.vertices.length; i++){
+    const v1 = ex.vertices[i];
+    const v2 = ex.vertices[(i+1) % ex.vertices.length];
+    const p1 = s.placed[v1.l];
+    const p2 = s.placed[v2.l];
+    if(p1 && p2) drawUserSegment(ex.id+'-grid', p1.x, p1.y, p2.x, p2.y, 500);
+  }
+  letters.querySelectorAll('.letter-chip').forEach(ch=>{
+    ch.addEventListener('click', ()=>{
+      if(ch.classList.contains('placed')) return;
+      letters.querySelectorAll('.letter-chip').forEach(c=>c.classList.remove('active'));
+      ch.classList.add('active');
+    });
+  });
+  attachGridClicks(ex.id+'-grid', (x,y)=>{
+    const active = letters.querySelector('.letter-chip.active');
+    if(!active){ showFeedback(ex.id,'partial','👆 Prima scegli una lettera!'); return; }
+    s.placed[active.dataset.letter] = {x,y};
+    saveState();
+    refreshFigureEx(ex);
+    document.getElementById(ex.id+'-fb').innerHTML='';
+  });
+}
+
+function checkFigureEx(id){
+  const ex = EXERCISES.find(e=>e.id===id);
+  const s = exState(id);
+  let pointsOk = ex.vertices.every(v=>{
+    const p = s.placed[v.l];
+    return p && p.x===v.x && p.y===v.y;
+  });
+  const nameOk = (s.name||'').trim().toLowerCase() === ex.figureName;
+  if(pointsOk && nameOk){
+    showFeedback(id,'ok',`🔶 Perfetto! Tutti i vertici giusti e la figura è un ${ex.figureName}!`);
+    markDone(id);
+  } else if(pointsOk && !nameOk){
+    showFeedback(id,'partial',`I vertici sono giusti! Come si chiama questa figura? Riprova a scriverlo.`);
+  } else {
+    showFeedback(id,'partial','Alcuni vertici non sono al posto giusto. Ricontrolla! 📐');
+  }
+}
+
+/* ========== ES 9: Rectangle ========== */
+EXERCISES.push({
+  id:'ex9',
+  number:'9',
+  title:'Disegna il rettangolo!',
+  hint:'Questa volta abbiamo 4 vertici. Che figura viene fuori?',
+  vertices:[
+    {l:'A', x:1, y:2},
+    {l:'B', x:6, y:2},
+    {l:'C', x:6, y:5},
+    {l:'D', x:1, y:5}
+  ],
+  figureName:'rettangolo',
+  render(container){ renderFigureEx(this, container); }
+});
+
+/* ========== ES 10: Square ========== */
+EXERCISES.push({
+  id:'ex10',
+  number:'10',
+  title:'Disegna il quadrato!',
+  hint:'4 vertici, tutti i lati uguali — sarà un...?',
+  vertices:[
+    {l:'A', x:2, y:2},
+    {l:'B', x:6, y:2},
+    {l:'C', x:6, y:6},
+    {l:'D', x:2, y:6}
+  ],
+  figureName:'quadrato',
+  render(container){ renderFigureEx(this, container); }
+});
+
+/* ========== ES 11: Farther from origin ========== */
+EXERCISES.push({
+  id:'ex11',
+  number:'11',
+  title:'Quale punto è più lontano?',
+  hint:'Scegli quale dei due punti è più lontano dall\'origine O(0 ; 0). Più i numeri sono grandi, più il punto è lontano!',
+  tasks:[
+    {a:{l:'A',x:1,y:1}, b:{l:'B',x:5,y:5}, ans:'B'},
+    {a:{l:'C',x:2,y:3}, b:{l:'D',x:7,y:1}, ans:'D'},
+    {a:{l:'E',x:1,y:8}, b:{l:'F',x:3,y:2}, ans:'E'},
+    {a:{l:'G',x:4,y:4}, b:{l:'H',x:1,y:1}, ans:'G'},
+    {a:{l:'I',x:6,y:6}, b:{l:'L',x:2,y:2}, ans:'I'}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Cerchia il punto PIÙ LONTANO dall'origine (0 ; 0):</strong></p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+        ${this.tasks.map((t,i)=>`
+          <div class="choice-row">
+            <span class="prompt">${i+1})</span>
+            <div class="choice-group">
+              <button class="choice-btn ${s.ans[i]===t.a.l?'selected':''}" onclick="setChoice('ex11',${i},'${t.a.l}')">${t.a.l}(${t.a.x} ; ${t.a.y})</button>
+              <span style="font-weight:700;padding:0 4px;">oppure</span>
+              <button class="choice-btn ${s.ans[i]===t.b.l?'selected':''}" onclick="setChoice('ex11',${i},'${t.b.l}')">${t.b.l}(${t.b.x} ; ${t.b.y})</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx11()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+  }
+});
+
+function checkEx11(){
+  const ex = EXERCISES.find(e=>e.id==='ex11');
+  const s = exState('ex11');
+  let ok=0;
+  ex.tasks.forEach((t,i)=>{ if(s.ans[i]===t.ans) ok++; });
+  if(ok===ex.tasks.length){
+    showFeedback('ex11','ok',`🎯 Tutte giuste! Più i numeri sono grandi, più il punto è lontano.`);
+    markDone('ex11');
+  } else {
+    showFeedback('ex11','partial',`${ok}/${ex.tasks.length} giuste. Guarda bene quale numero è più grande!`);
+  }
+}
+
+/* ========== ES 12: Where is the point? ========== */
+EXERCISES.push({
+  id:'ex12',
+  number:'12',
+  title:'Dove si trova il punto?',
+  hint:'Se x = 0 → sull\'asse y. Se y = 0 → sull\'asse x. Se entrambi = 0 → è l\'ORIGINE!',
+  tasks:[
+    {l:'A', x:3, y:0, ans:'asse-x'},
+    {l:'B', x:0, y:5, ans:'asse-y'},
+    {l:'C', x:2, y:4, ans:'piano'},
+    {l:'D', x:0, y:0, ans:'origine'},
+    {l:'E', x:7, y:0, ans:'asse-x'},
+    {l:'F', x:0, y:3, ans:'asse-y'}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Dove si trova ciascun punto? Scegli la risposta giusta:</strong></p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+        ${this.tasks.map((t,i)=>`
+          <div class="choice-row">
+            <span class="prompt">${i+1}) ${t.l}(${t.x} ; ${t.y})</span>
+            <div class="choice-group">
+              <button class="choice-btn ${s.ans[i]==='asse-x'?'selected':''}" onclick="setChoice('ex12',${i},'asse-x')">Asse x</button>
+              <button class="choice-btn ${s.ans[i]==='asse-y'?'selected':''}" onclick="setChoice('ex12',${i},'asse-y')">Asse y</button>
+              <button class="choice-btn ${s.ans[i]==='piano'?'selected':''}" onclick="setChoice('ex12',${i},'piano')">Nel piano</button>
+              <button class="choice-btn ${s.ans[i]==='origine'?'selected':''}" onclick="setChoice('ex12',${i},'origine')">Origine</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx12()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+  }
+});
+
+function checkEx12(){
+  const ex = EXERCISES.find(e=>e.id==='ex12');
+  const s = exState('ex12');
+  let ok=0;
+  ex.tasks.forEach((t,i)=>{ if(s.ans[i]===t.ans) ok++; });
+  if(ok===ex.tasks.length){
+    showFeedback('ex12','ok',`📍 Perfetto! Hai capito bene assi e origine.`);
+    markDone('ex12');
+  } else {
+    showFeedback('ex12','partial',`${ok}/${ex.tasks.length} corrette. Ricorda: y=0 → asse x; x=0 → asse y.`);
+  }
+}
+
+/* ========== ES 13: Match points to coordinates ========== */
+EXERCISES.push({
+  id:'ex13',
+  number:'13',
+  title:'Collega ogni punto alle sue coordinate',
+  hint:'Osserva il piano e trascina (scegli dal menu) le coordinate giuste per ogni punto.',
+  presets:[
+    {l:'A', x:5, y:1},
+    {l:'B', x:2, y:7},
+    {l:'C', x:3, y:2},
+    {l:'D', x:6, y:4},
+    {l:'E', x:1, y:5}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    const options = this.presets.map(p=>`(${p.x} ; ${p.y})`).sort(()=>Math.random()-0.5);
+    // Use a fixed order so it's consistent per session
+    const fixed = s.options || this.presets.map(p=>`(${p.x} ; ${p.y})`);
+    s.options = fixed;
+    saveState();
+    container.innerHTML = `
+      <p><strong>Ad ogni punto assegna le coordinate corrette scegliendole dal menù:</strong></p>
+      ${buildGrid({id:this.id+'-grid', size:8, presetPoints:this.presets.map(p=>({x:p.x,y:p.y,label:p.l,labelPos:{dx:10,dy:-8}}))})}
+      <div class="match-grid">
+        ${this.presets.map(p=>`
+          <div class="match-row">
+            <span class="pt-label">${p.l} =</span>
+            <select id="${this.id}-${p.l}-sel">
+              <option value="">— scegli —</option>
+              ${fixed.map(o=>`<option value="${o}" ${s.ans[p.l]===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx13()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.presets.forEach(p=>{
+      const sel = document.getElementById(`${this.id}-${p.l}-sel`);
+      sel.addEventListener('change',()=>{
+        s.ans[p.l]=sel.value;
+        saveState();
+      });
+    });
+  }
+});
+
+function checkEx13(){
+  const ex = EXERCISES.find(e=>e.id==='ex13');
+  const s = exState('ex13');
+  let ok=0;
+  ex.presets.forEach(p=>{
+    if(s.ans[p.l]===`(${p.x} ; ${p.y})`) ok++;
+  });
+  if(ok===ex.presets.length){
+    showFeedback('ex13','ok',`🔗 Collegamenti perfetti!`);
+    markDone('ex13');
+  } else {
+    showFeedback('ex13','partial',`${ok}/${ex.presets.length} giusti. Riguarda il piano e riprova!`);
+  }
+}
+
+/* ========== ES 14: Hidden treasure ========== */
+EXERCISES.push({
+  id:'ex14',
+  number:'14',
+  title:'🏴‍☠️ La caccia al tesoro!',
+  hint:'Segui la mappa: segna tutti i punti in ordine. All\'ultimo punto c\'è il tesoro!',
+  path:[
+    {l:'Partenza', x:1, y:1},
+    {l:'Palma', x:3, y:2},
+    {l:'Fonte', x:3, y:5},
+    {l:'Grotta', x:6, y:5},
+    {l:'Tesoro 💎', x:7, y:7}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.placed) s.placed = {};
+    container.innerHTML = `
+      <p><strong>Sei sull'isola del tesoro! Segna i punti in ordine per trovarlo:</strong></p>
+      <ol style="margin:10px 0 14px 28px;">
+        ${this.path.map((p,i)=>`<li><strong>${p.l}</strong> in posizione (${p.x} ; ${p.y})</li>`).join('')}
+      </ol>
+      <div class="letter-legend" id="${this.id}-letters"></div>
+      ${buildGrid({id:this.id+'-grid', size:8, clickable:true})}
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx14()">✓ Controlla il percorso</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.refresh();
+  },
+  refresh(){
+    const s = exState(this.id);
+    const letters = document.getElementById(this.id+'-letters');
+    letters.innerHTML = this.path.map((p,i)=>{
+      const placed = s.placed[i] !== undefined;
+      return `<span class="letter-chip ${placed?'placed':''}" data-idx="${i}" style="min-width:auto;">${i+1}. ${p.l}</span>`;
+    }).join('');
+    const svg = document.getElementById(this.id+'-grid');
+    svg.querySelectorAll('.user-added, .user-segment').forEach(n=>n.remove());
+    // Draw in order, connected
+    let prev = null;
+    this.path.forEach((p,i)=>{
+      const pt = s.placed[i];
+      if(!pt) return;
+      if(prev) drawUserSegment(this.id+'-grid', prev.x, prev.y, pt.x, pt.y, 500);
+      prev = pt;
+    });
+    this.path.forEach((p,i)=>{
+      const pt = s.placed[i];
+      if(pt) drawUserPoint(this.id+'-grid', pt.x, pt.y, String(i+1), i===this.path.length-1?'#FFC93C':'#5CB85C');
+    });
+    letters.querySelectorAll('.letter-chip').forEach(ch=>{
+      ch.addEventListener('click', ()=>{
+        if(ch.classList.contains('placed')) return;
+        letters.querySelectorAll('.letter-chip').forEach(c=>c.classList.remove('active'));
+        ch.classList.add('active');
+      });
+    });
+    attachGridClicks(this.id+'-grid', (x,y)=>{
+      const active = letters.querySelector('.letter-chip.active');
+      if(!active){ showFeedback(this.id,'partial','👆 Prima scegli la tappa!'); return; }
+      s.placed[parseInt(active.dataset.idx)] = {x,y};
+      saveState();
+      this.refresh();
+      document.getElementById(this.id+'-fb').innerHTML='';
+    });
+  }
+});
+
+function checkEx14(){
+  const ex = EXERCISES.find(e=>e.id==='ex14');
+  const s = exState('ex14');
+  let ok = ex.path.every((p,i)=>{
+    const pt = s.placed[i];
+    return pt && pt.x===p.x && pt.y===p.y;
+  });
+  if(ok){
+    showFeedback('ex14','ok',`🏆 TESORO TROVATO! Hai seguito perfettamente la mappa!`);
+    markDone('ex14');
+    celebrate();
+  } else {
+    showFeedback('ex14','partial','Il percorso non è giusto. Riguarda le coordinate della mappa! 🗺️');
+  }
+}
+
+/* ========== ES 15: Robot movement ========== */
+EXERCISES.push({
+  id:'ex15',
+  number:'15',
+  title:'🤖 Il robot che si sposta',
+  hint:'Il robot parte da un punto e si muove nel piano. Dove arriva? Calcola la posizione finale!',
+  tasks:[
+    {start:{x:2,y:3}, moves:'3 a destra, 2 in su', end:{x:5, y:5}},
+    {start:{x:1,y:1}, moves:'4 a destra, 5 in su', end:{x:5, y:6}},
+    {start:{x:5,y:2}, moves:'2 a sinistra, 3 in su', end:{x:3, y:5}},
+    {start:{x:6,y:7}, moves:'3 in giù, 2 a sinistra', end:{x:4, y:4}},
+    {start:{x:0,y:4}, moves:'6 a destra, 0 in su', end:{x:6, y:4}}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.ans) s.ans = {};
+    container.innerHTML = `
+      <p><strong>Il robot 🤖 parte da un punto e si muove. Scrivi dove arriva!</strong></p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+        ${this.tasks.map((t,i)=>`
+          <div class="choice-row">
+            <span class="prompt">${i+1}) Parte da <strong>(${t.start.x} ; ${t.start.y})</strong> e si sposta di <em>${t.moves}</em>. Arriva in:</span>
+            <div class="coord-input">
+              (
+              <input type="number" min="0" max="8" id="${this.id}-${i}-x" value="${s.ans[i+'x']||''}" placeholder="x">
+              ;
+              <input type="number" min="0" max="8" id="${this.id}-${i}-y" value="${s.ans[i+'y']||''}" placeholder="y">
+              )
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx15()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.tasks.forEach((t,i)=>{
+      ['x','y'].forEach(ax=>{
+        const el = document.getElementById(`${this.id}-${i}-${ax}`);
+        el.addEventListener('input',()=>{
+          s.ans[i+ax]=el.value;
+          saveState();
+        });
+      });
+    });
+  }
+});
+
+function checkEx15(){
+  const ex = EXERCISES.find(e=>e.id==='ex15');
+  const s = exState('ex15');
+  let ok=0;
+  ex.tasks.forEach((t,i)=>{
+    if(parseInt(s.ans[i+'x'])===t.end.x && parseInt(s.ans[i+'y'])===t.end.y) ok++;
+  });
+  if(ok===ex.tasks.length){
+    showFeedback('ex15','ok',`🤖 Perfetto! Il robot è arrivato in tutti i posti giusti!`);
+    markDone('ex15');
+  } else {
+    showFeedback('ex15','partial',`${ok}/${ex.tasks.length} giuste. Ricorda: a destra +x, a sinistra -x, in su +y, in giù -y.`);
+  }
+}
+
+/* ========== ES 16: Battaglia navale semplice ========== */
+EXERCISES.push({
+  id:'ex16',
+  number:'16',
+  title:'⚓ Battaglia navale: trova le barche!',
+  hint:'Abbiamo 5 barche nascoste. Clicca sulle coordinate per trovarle tutte!',
+  ships:[
+    {x:2,y:5}, {x:4,y:2}, {x:6,y:7}, {x:7,y:3}, {x:1,y:7}
+  ],
+  render(container){
+    const s = exState(this.id);
+    if(!s.shots) s.shots = [];
+    if(!s.hits) s.hits = [];
+    const remaining = this.ships.length - s.hits.length;
+    container.innerHTML = `
+      <p><strong>Trova le 5 barche nascoste nel mare! Clicca sulla griglia per sparare un colpo.</strong></p>
+      <div style="text-align:center;margin:12px 0;">
+        <span class="mini-chip" style="background:var(--coral);color:white;">💥 Colpi sparati: <span id="${this.id}-shots">${s.shots.length}</span></span>
+        <span class="mini-chip" style="background:var(--grass);color:white;">🚢 Barche trovate: <span id="${this.id}-hits">${s.hits.length}</span> / 5</span>
+      </div>
+      ${buildGrid({id:this.id+'-grid', size:8, clickable:true})}
+      <div class="action-bar">
+        <button class="btn btn-check" onclick="checkEx16()">✓ Controlla</button>
+        <div id="${this.id}-fb"></div>
+      </div>
+    `;
+    this.refresh();
+  },
+  refresh(){
+    const s = exState(this.id);
+    const svg = document.getElementById(this.id+'-grid');
+    svg.querySelectorAll('.user-added').forEach(n=>n.remove());
+    // Show shots (misses = blue X, hits = green ship)
+    s.shots.forEach(sh=>{
+      const hit = this.ships.some(b=>b.x===sh.x && b.y===sh.y);
+      if(hit){
+        drawUserPoint(this.id+'-grid', sh.x, sh.y, '🚢', '#5CB85C');
+      } else {
+        drawUserPoint(this.id+'-grid', sh.x, sh.y, '✗', '#C9D7E8');
+      }
+    });
+    attachGridClicks(this.id+'-grid', (x,y)=>{
+      // Check if already shot
+      if(s.shots.some(sh=>sh.x===x && sh.y===y)) return;
+      s.shots.push({x,y});
+      const hit = this.ships.some(b=>b.x===x && b.y===y);
+      if(hit){
+        s.hits.push({x,y});
+      }
+      saveState();
+      this.render(document.getElementById(this.id+'-body'));
+    });
+  }
+});
+
+function checkEx16(){
+  const ex = EXERCISES.find(e=>e.id==='ex16');
+  const s = exState('ex16');
+  if(s.hits.length === ex.ships.length){
+    showFeedback('ex16','ok',`⚓ Ammiraglio! Hai trovato tutte le 5 barche in ${s.shots.length} colpi!`);
+    markDone('ex16');
+    celebrate();
+  } else {
+    showFeedback('ex16','partial',`Hai trovato ${s.hits.length}/5 barche. Continua a cercare!`);
+  }
+}
+
+/* =====================================================
+   RENDER ENGINE
+   ===================================================== */
+function renderAll(){
+  const container = document.getElementById('exercises');
+  container.innerHTML = '';
+  EXERCISES.forEach(ex => {
+    const card = document.createElement('section');
+    card.className = 'exercise';
+    card.id = ex.id;
+    const s = exState(ex.id);
+    if(s.done) card.classList.add('done');
+    card.innerHTML = `
+      <div class="exercise-head">
+        <div class="ex-number ${s.done?'done':''}">ES ${ex.number}${s.done?' ✓':''}</div>
+        <div class="ex-title-block">
+          <h2 class="ex-title">${ex.title}</h2>
+          <p class="ex-hint">${ex.hint}</p>
+        </div>
+        <button class="ex-reset" onclick="resetOne('${ex.id}')">🔄 Ricomincia</button>
+      </div>
+      <div id="${ex.id}-body"></div>
+    `;
+    container.appendChild(card);
+    ex.render(document.getElementById(ex.id+'-body'));
+  });
+  updateProgress();
+}
+
+function renderOne(id){
+  const ex = EXERCISES.find(e=>e.id===id);
+  const body = document.getElementById(id+'-body');
+  if(!body || !ex) return;
+  ex.render(body);
+}
+
+/* =====================================================
+   FEEDBACK & PROGRESS
+   ===================================================== */
+function showFeedback(id, kind, msg){
+  const fb = document.getElementById(id+'-fb');
+  if(!fb) return;
+  fb.innerHTML = `<div class="feedback ${kind}">
+    <span class="big">${kind==='ok'?'✅':kind==='partial'?'🤔':'❌'}</span>
+    <span>${msg}</span>
+  </div>`;
+}
+
+function markDone(id){
+  const s = exState(id);
+  s.done = true;
+  saveState();
+  document.getElementById(id)?.classList.add('done');
+  const head = document.querySelector(`#${id} .ex-number`);
+  if(head && !head.textContent.includes('✓')){
+    head.classList.add('done');
+    head.textContent = head.textContent.replace(/$/, ' ✓');
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const total = EXERCISES.length;
+  const done = EXERCISES.filter(e=>exState(e.id).done).length;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('pbar').style.width = pct+'%';
+  document.getElementById('pcount').textContent = `${done} / ${total}`;
+}
+
+function celebrate(){
+  const box = document.getElementById('celebration');
+  const colors = ['#FFC93C','#FF6B5B','#5CB85C','#1E5B94','#A07BBF'];
+  for(let i=0; i<40; i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100+'%';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay = (Math.random()*0.5)+'s';
+    c.style.animationDuration = (2+Math.random()*2)+'s';
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    box.appendChild(c);
+    setTimeout(()=>c.remove(), 4000);
+  }
+}
+
+/* =====================================================
+   RESET
+   ===================================================== */
+function resetOne(id){
+  if(!confirm('Vuoi davvero ricominciare questo esercizio?')) return;
+  state.exercises[id] = {};
+  saveState();
+  renderOne(id);
+  document.getElementById(id)?.classList.remove('done');
+  updateProgress();
+}
+
+function confirmResetAll(){
+  if(!confirm('⚠️ Vuoi davvero cancellare TUTTE le risposte e ricominciare dall\'inizio?')) return;
+  state = {student:{name:'',class:'',date:''}, exercises:{}};
+  saveState();
+  document.getElementById('stu-name').value = '';
+  document.getElementById('stu-class').value = '';
+  document.getElementById('stu-date').value = '';
+  renderAll();
+  scrollTop();
+}
+
+/* =====================================================
+   STUDENT INFO AUTO-SAVE
+   ===================================================== */
+function wireStudentInputs(){
+  ['stu-name','stu-class','stu-date'].forEach(id=>{
+    const el = document.getElementById(id);
+    const key = id.replace('stu-','');
+    if(state.student?.[key]) el.value = state.student[key];
+    el.addEventListener('input', ()=>{
+      if(!state.student) state.student = {};
+      state.student[key] = el.value;
+      saveState();
+    });
+  });
+}
+
+/* =====================================================
+   PDF EXPORT
+   ===================================================== */
+function exportPDF(){
+  const btn = event.target;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Preparo il PDF...';
+  btn.disabled = true;
+
+  document.body.classList.add('pdf-mode');
+
+  const root = document.getElementById('pdf-root');
+  const opts = {
+    margin:       [8, 6, 10, 6],
+    filename:     `piano-cartesiano-${(state.student?.name||'esercizi').replace(/\s+/g,'-').toLowerCase()}.pdf`,
+    image:        { type: 'jpeg', quality: 0.96 },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  html2pdf().set(opts).from(root).save().then(()=>{
+    document.body.classList.remove('pdf-mode');
+    btn.innerHTML = orig;
+    btn.disabled = false;
+  }).catch(err=>{
+    console.error(err);
+    document.body.classList.remove('pdf-mode');
+    btn.innerHTML = orig;
+    btn.disabled = false;
+    alert('Errore nell\'esportazione PDF. Riprova.');
+  });
+}
+
+function scrollTop(){
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* =====================================================
+   INIT
+   ===================================================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  wireStudentInputs();
+  renderAll();
+});
+</script>
+</body>
+</html>
